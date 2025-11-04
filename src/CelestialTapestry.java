@@ -2,202 +2,131 @@
  * PROGRAM: CelestialTapestry
  * AUTHOR: GPT-5 Codex
  * DATE: 2024-05-12
- * DESCRIPTION: Generates a colorful unicode-based tapestry using ANSI colors
- *              and intricate helper methods to demonstrate structured Java code.
+ * DESCRIPTION: Renders a precise zigzag tapestry using ANSI colors and
+ *              unicode symbols while demonstrating structured Java design.
  */
 public class CelestialTapestry {
 
     private static final int TOTAL_ROWS = 40;
-    private static final int TOTAL_COLUMNS = 36;
+    private static final int TOTAL_COLUMNS = 20;
     private static final String ANSI_RESET = "\u001B[0m";
     private static final String ANSI_BLUE_BACKGROUND = "\u001B[44m";
-    private static final String ANSI_RED_BACKGROUND = "\u001B[41m";
-    private static final String ANSI_CYAN_BACKGROUND = "\u001B[46m";
-    private static final String ANSI_WHITE_BACKGROUND = "\u001B[47m";
-    private static final String ANSI_BRIGHT_WHITE_TEXT = "\u001B[97m";
-    private static final String ANSI_DARK_TEXT = "\u001B[30m";
-    private static final char STAR_SYMBOL = '\u272A';
-    private static final char ORBIT_SYMBOL = '\u25CF';
+    private static final String ANSI_RED_FOREGROUND = "\u001B[31m";
+    private static final String ANSI_WHITE_FOREGROUND = "\u001B[97m";
+    private static final String ANSI_GRAY_FOREGROUND = "\u001B[37m";
+    private static final char OUTER_RING = '\u25CE';
+    private static final char INNER_GLOW = '\u25CF';
 
     public static void main(String[] args) {
-        runShowcase();
+        launchTapestry();
     }
 
     /**
-     * Drives the entire artwork rendering process.
+     * Starts the rendering process for the tapestry art.
      */
-    private static void runShowcase() {
-        printProgramTitle();
-        printCanvas();
-        printDescendingGlow();
+    private static void launchTapestry() {
+        renderPattern();
     }
 
     /**
-     * Prints a textual introduction framed within the tapestry width.
+     * Iterates through each row of the tapestry using an incrementing loop.
      */
-    private static void printProgramTitle() {
-        printRow(createTextRow(""));
-        printRow(createTextRow("Sword & Supper AFK presents"));
-        printRow(createTextRow("Celestial Supper Stream"));
-        printRow(createTextRow(""));
-    }
-
-    /**
-     * Renders the primary zigzag tapestry using an incrementing loop.
-     */
-    private static void printCanvas() {
+    private static void renderPattern() {
         for (int row = 0; row < TOTAL_ROWS; row++) {
-            printRow(buildRow(row));
+            printLine(buildRow(row));
         }
     }
 
     /**
-     * Constructs a single row of the tapestry by stitching together colored cells.
+     * Builds the string representation for a single row of the tapestry.
      */
-    private static String buildRow(int rowIndex) {
+    private static String buildRow(int row) {
         StringBuilder builder = new StringBuilder();
-        for (int columnIndex = 0; columnIndex < TOTAL_COLUMNS; columnIndex++) {
-            builder.append(selectCell(rowIndex, columnIndex));
+        builder.append(ANSI_BLUE_BACKGROUND);
+        int tokenColumn = locateTokenColumn(row);
+        for (int column = 0; column < TOTAL_COLUMNS; column++) {
+            builder.append(assembleCell(row, column, tokenColumn));
         }
         builder.append(ANSI_RESET);
         return builder.toString();
     }
 
     /**
-     * Determines which styled cell belongs at the given coordinates.
+     * Determines which column should display the accent token for a row.
      */
-    private static String selectCell(int rowIndex, int columnIndex) {
-        int primaryColumn = computeZigzagColumn(rowIndex, false);
-        int secondaryColumn = computeZigzagColumn(rowIndex, true);
-        if (columnIndex == primaryColumn) {
-            return createSymbolCell(chooseColor(rowIndex, true), chooseSymbol(rowIndex));
-        } else if (columnIndex == secondaryColumn) {
-            return createSymbolCell(chooseColor(rowIndex, false), chooseSymbol(rowIndex + columnIndex));
+    private static int locateTokenColumn(int row) {
+        if (row < 14) {
+            return 2 + row;
+        } else if (row < 26) {
+            return 15 - (row - 14);
         }
-        return createBackgroundCell(rowIndex, columnIndex);
+        return 2 + (row - 26);
     }
 
     /**
-     * Calculates the zigzag path column for either side of the pattern.
+     * Chooses between the accent token and the blue background cell.
      */
-    private static int computeZigzagColumn(int rowIndex, boolean mirrored) {
-        int segmentLength = 10;
-        int period = segmentLength * 2;
-        int progress = rowIndex % period;
-        int offset = progress < segmentLength
-                ? progress
-                : segmentLength - (progress - segmentLength) - 1;
-        offset = Math.max(offset, 0);
-        int baseColumn = 4;
-        if (mirrored) {
-            return (TOTAL_COLUMNS - baseColumn - 1) - offset;
+    private static String assembleCell(int row, int column, int tokenColumn) {
+        if (column == tokenColumn) {
+            return createTokenCell(row);
         }
-        return baseColumn + offset;
+        return createBackgroundCell();
     }
 
     /**
-     * Chooses which symbol should appear for a particular row.
+     * Produces the blue background cell for empty portions of the tapestry.
      */
-    private static char chooseSymbol(int seed) {
-        if (seed % 3 == 0) {
-            return STAR_SYMBOL;
-        }
-        return ORBIT_SYMBOL;
+    private static String createBackgroundCell() {
+        return "  ";
     }
 
     /**
-     * Picks a background color for the moving symbols.
+     * Builds the accent token cell, restoring the background afterward.
      */
-    private static String chooseColor(int rowIndex, boolean primaryPath) {
-        int phase = rowIndex % 4;
-        if (primaryPath) {
-            return phase < 2 ? ANSI_RED_BACKGROUND : ANSI_CYAN_BACKGROUND;
-        }
-        return phase < 2 ? ANSI_CYAN_BACKGROUND : ANSI_WHITE_BACKGROUND;
+    private static String createTokenCell(int row) {
+        return ANSI_RESET + applyTokenLayers(row) + ANSI_RESET + ANSI_BLUE_BACKGROUND;
     }
 
     /**
-     * Builds the shimmering background cell for non-symbol spaces.
+     * Uses a decrementing loop to assemble the layered unicode symbols.
      */
-    private static String createBackgroundCell(int rowIndex, int columnIndex) {
-        boolean highlight = (rowIndex + columnIndex) % 7 == 0;
-        String color = highlight ? ANSI_CYAN_BACKGROUND : ANSI_BLUE_BACKGROUND;
-        return color + " " + ANSI_RESET;
-    }
-
-    /**
-     * Generates a colored symbol cell with appropriate foreground contrast.
-     */
-    private static String createSymbolCell(String backgroundColor, char symbol) {
-        String textColor = backgroundColor.equals(ANSI_WHITE_BACKGROUND) ? ANSI_DARK_TEXT : ANSI_BRIGHT_WHITE_TEXT;
-        return backgroundColor + textColor + symbol + ANSI_RESET;
-    }
-
-    /**
-     * Wraps text inside a full-width, colored banner row.
-     */
-    private static String createTextRow(String message) {
-        String centered = centerText(message);
-        return ANSI_BLUE_BACKGROUND + ANSI_BRIGHT_WHITE_TEXT + centered + ANSI_RESET;
-    }
-
-    /**
-     * Centers provided text according to the tapestry width.
-     */
-    private static String centerText(String text) {
-        String trimmed = text.length() > TOTAL_COLUMNS ? text.substring(0, TOTAL_COLUMNS) : text;
-        int totalPadding = TOTAL_COLUMNS - trimmed.length();
-        int leftPadding = totalPadding / 2;
-        int rightPadding = totalPadding - leftPadding;
-        return repeatChar(' ', leftPadding) + trimmed + repeatChar(' ', rightPadding);
-    }
-
-    /**
-     * Repeats a character a specified number of times.
-     */
-    private static String repeatChar(char ch, int count) {
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < count; i++) {
-            builder.append(ch);
-        }
-        return builder.toString();
-    }
-
-    /**
-     * Prints a single line of output without repeating println statements elsewhere.
-     */
-    private static void printRow(String rowContent) {
-        System.out.println(rowContent);
-    }
-
-    /**
-     * Adds a descending glow trail using a decrementing loop for contrast.
-     */
-    private static void printDescendingGlow() {
-        for (int width = TOTAL_COLUMNS; width >= 10; width -= 5) {
-            printRow(createGlowLine(width));
-        }
-    }
-
-    /**
-     * Builds one shimmering glow line composed of alternating symbols.
-     */
-    private static String createGlowLine(int width) {
-        int safeWidth = Math.max(2, Math.min(width, TOTAL_COLUMNS));
-        int padding = (TOTAL_COLUMNS - safeWidth) / 2;
-        StringBuilder builder = new StringBuilder();
-        for (int columnIndex = 0; columnIndex < TOTAL_COLUMNS; columnIndex++) {
-            boolean insideGlow = columnIndex >= padding && columnIndex < padding + safeWidth;
-            if (insideGlow) {
-                boolean inverted = (columnIndex - padding) % 2 == 0;
-                String color = inverted ? ANSI_RED_BACKGROUND : ANSI_CYAN_BACKGROUND;
-                char symbol = inverted ? STAR_SYMBOL : ORBIT_SYMBOL;
-                builder.append(createSymbolCell(color, symbol));
+    private static String applyTokenLayers(int row) {
+        String[] palette = new String[] {selectInnerColor(row), selectOuterColor(row)};
+        StringBuilder layerBuilder = new StringBuilder();
+        for (int index = palette.length - 1; index >= 0; index--) {
+            if (index == palette.length - 1) {
+                layerBuilder.append(palette[index]).append(OUTER_RING);
             } else {
-                builder.append(createBackgroundCell(TOTAL_ROWS + width, columnIndex));
+                layerBuilder.append(palette[index]).append(INNER_GLOW);
             }
         }
-        builder.append(ANSI_RESET);
-        return builder.toString();
+        return layerBuilder.toString();
+    }
+
+    /**
+     * Chooses the outer ring color based on the row number.
+     */
+    private static String selectOuterColor(int row) {
+        if (row % 2 == 0) {
+            return ANSI_RED_FOREGROUND;
+        }
+        return ANSI_WHITE_FOREGROUND;
+    }
+
+    /**
+     * Chooses the inner glow color to contrast with the outer ring.
+     */
+    private static String selectInnerColor(int row) {
+        if (row % 2 == 0) {
+            return ANSI_WHITE_FOREGROUND;
+        }
+        return ANSI_GRAY_FOREGROUND;
+    }
+
+    /**
+     * Prints a fully constructed row to the console.
+     */
+    private static void printLine(String content) {
+        System.out.println(content);
     }
 }
