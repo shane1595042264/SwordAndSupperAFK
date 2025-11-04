@@ -10,7 +10,8 @@ public class CelestialTapestry {
     private static final int TOTAL_ROWS = 40;
     private static final int TOTAL_COLUMNS = 20;
     private static final String ANSI_RESET = "\u001B[0m";
-    private static final String ANSI_BLUE_BACKGROUND = "\u001B[44m";
+    // Deep navy backdrop that matches the provided reference image.
+    private static final String ANSI_NAVY_BACKGROUND = "\u001B[48;5;17m";
     private static final String ANSI_RED_FOREGROUND = "\u001B[31m";
     private static final String ANSI_WHITE_FOREGROUND = "\u001B[97m";
     private static final String ANSI_GRAY_FOREGROUND = "\u001B[37m";
@@ -42,7 +43,7 @@ public class CelestialTapestry {
      */
     private static String buildRow(int row) {
         StringBuilder builder = new StringBuilder();
-        builder.append(ANSI_BLUE_BACKGROUND);
+        builder.append(ANSI_NAVY_BACKGROUND);
         int tokenColumn = locateTokenColumn(row);
         for (int column = 0; column < TOTAL_COLUMNS; column++) {
             builder.append(assembleCell(row, column, tokenColumn));
@@ -84,7 +85,7 @@ public class CelestialTapestry {
      * Builds the accent token cell, restoring the background afterward.
      */
     private static String createTokenCell(int row) {
-        return ANSI_RESET + applyTokenLayers(row) + ANSI_RESET + ANSI_BLUE_BACKGROUND;
+        return ANSI_RESET + applyTokenLayers(row) + ANSI_RESET + ANSI_NAVY_BACKGROUND;
     }
 
     /**
