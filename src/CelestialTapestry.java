@@ -14,9 +14,9 @@ public class CelestialTapestry {
     private static final String ANSI_NAVY_BACKGROUND = "\u001B[48;5;17m";
     private static final String ANSI_RED_FOREGROUND = "\u001B[31m";
     private static final String ANSI_WHITE_FOREGROUND = "\u001B[97m";
-    private static final String ANSI_GRAY_FOREGROUND = "\u001B[37m";
-    private static final char OUTER_RING = '\u25CE';
-    private static final char INNER_GLOW = '\u25CF';
+    private static final String ANSI_YELLOW_FOREGROUND = "\u001B[33m";
+    private static final char SMILEY_FACE = '\u263A';
+    private static final char PADDING_CHAR = '\u2002';
 
     public static void main(String[] args) {
         launchTapestry();
@@ -85,29 +85,40 @@ public class CelestialTapestry {
      * Builds the accent token cell, restoring the background afterward.
      */
     private static String createTokenCell(int row) {
-        return ANSI_RESET + applyTokenLayers(row) + ANSI_RESET + ANSI_NAVY_BACKGROUND;
+        String smiley = buildSmiley(row);
+        return ANSI_RESET + smiley + ANSI_RESET + ANSI_NAVY_BACKGROUND + createPaddingTrail();
     }
 
     /**
-     * Uses a decrementing loop to assemble the layered unicode symbols.
+     * Builds the smiley accent using a decrementing loop to prepare layers.
      */
-    private static String applyTokenLayers(int row) {
-        String[] palette = new String[] {selectInnerColor(row), selectOuterColor(row)};
-        StringBuilder layerBuilder = new StringBuilder();
+    private static String buildSmiley(int row) {
+        String[] palette = new String[] {selectSmileyColor(row), selectAuraColor(row)};
+        StringBuilder builder = new StringBuilder();
         for (int index = palette.length - 1; index >= 0; index--) {
-            if (index == palette.length - 1) {
-                layerBuilder.append(palette[index]).append(OUTER_RING);
+            if (index == 0) {
+                builder.append(palette[index]).append(SMILEY_FACE);
             } else {
-                layerBuilder.append(palette[index]).append(INNER_GLOW);
+                builder.append(palette[index]);
             }
         }
-        return layerBuilder.toString();
+        return builder.toString();
     }
 
     /**
-     * Chooses the outer ring color based on the row number.
+     * Chooses the aura color that precedes each smiley.
      */
-    private static String selectOuterColor(int row) {
+    private static String selectAuraColor(int row) {
+        if (row % 2 == 0) {
+            return ANSI_YELLOW_FOREGROUND;
+        }
+        return "";
+    }
+
+    /**
+     * Chooses the smiley color, alternating between red and white faces.
+     */
+    private static String selectSmileyColor(int row) {
         if (row % 2 == 0) {
             return ANSI_RED_FOREGROUND;
         }
@@ -115,13 +126,14 @@ public class CelestialTapestry {
     }
 
     /**
-     * Chooses the inner glow color to contrast with the outer ring.
+     * Creates a transparent padding trail so the smiley sits on the navy field.
      */
-    private static String selectInnerColor(int row) {
-        if (row % 2 == 0) {
-            return ANSI_WHITE_FOREGROUND;
+    private static String createPaddingTrail() {
+        StringBuilder padding = new StringBuilder();
+        for (int pad = 1; pad > 0; pad--) {
+            padding.append(PADDING_CHAR);
         }
-        return ANSI_GRAY_FOREGROUND;
+        return padding.toString();
     }
 
     /**
