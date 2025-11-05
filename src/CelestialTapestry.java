@@ -14,7 +14,6 @@ public class CelestialTapestry {
     private static final String ANSI_NAVY_BACKGROUND = "\u001B[48;5;17m";
     private static final String ANSI_RED_FOREGROUND = "\u001B[31m";
     private static final String ANSI_WHITE_FOREGROUND = "\u001B[97m";
-    private static final String ANSI_YELLOW_FOREGROUND = "\u001B[33m";
     private static final char SMILEY_FACE = '\u263A';
     private static final char PADDING_CHAR = '\u2002';
 
@@ -69,7 +68,9 @@ public class CelestialTapestry {
      */
     private static String assembleCell(int row, int column, int tokenColumn) {
         if (column == tokenColumn) {
-            return createTokenCell(row);
+            return createTokenCell(row, true);
+        } else if (column == tokenColumn + 1) {
+            return createTokenCell(row, false);
         }
         return createBackgroundCell();
     }
@@ -84,56 +85,41 @@ public class CelestialTapestry {
     /**
      * Builds the accent token cell, restoring the background afterward.
      */
-    private static String createTokenCell(int row) {
-        String smiley = buildSmiley(row);
-        return ANSI_RESET + smiley + ANSI_RESET + ANSI_NAVY_BACKGROUND + createPaddingTrail();
+    private static String createTokenCell(int row, boolean isLeadingSmiley) {
+        String smileyColor = selectSmileyColor(row, isLeadingSmiley);
+        String smiley = buildSmiley(smileyColor);
+        StringBuilder cell = new StringBuilder();
+        cell.append(ANSI_RESET).append(smiley).append(ANSI_RESET).append(ANSI_NAVY_BACKGROUND);
+        if (!isLeadingSmiley) {
+            cell.append(PADDING_CHAR);
+        }
+        return cell.toString();
     }
 
     /**
      * Builds the smiley accent using a decrementing loop to prepare layers.
      */
-    private static String buildSmiley(int row) {
-        String[] palette = new String[] {selectSmileyColor(row), selectAuraColor(row)};
+    private static String buildSmiley(String smileyColor) {
         StringBuilder builder = new StringBuilder();
-        for (int index = palette.length - 1; index >= 0; index--) {
-            if (index == 0) {
-                builder.append(palette[index]).append(SMILEY_FACE);
+        for (int layer = 1; layer >= 0; layer--) {
+            if (layer == 1) {
+                builder.append(smileyColor);
             } else {
-                builder.append(palette[index]);
+                builder.append(SMILEY_FACE);
             }
         }
         return builder.toString();
     }
 
     /**
-     * Chooses the aura color that precedes each smiley.
-     */
-    private static String selectAuraColor(int row) {
-        if (row % 2 == 0) {
-            return ANSI_YELLOW_FOREGROUND;
-        }
-        return "";
-    }
-
-    /**
      * Chooses the smiley color, alternating between red and white faces.
      */
-    private static String selectSmileyColor(int row) {
-        if (row % 2 == 0) {
-            return ANSI_RED_FOREGROUND;
+    private static String selectSmileyColor(int row, boolean isLeadingSmiley) {
+        boolean evenRow = row % 2 == 0;
+        if (isLeadingSmiley) {
+            return evenRow ? ANSI_WHITE_FOREGROUND : ANSI_RED_FOREGROUND;
         }
-        return ANSI_WHITE_FOREGROUND;
-    }
-
-    /**
-     * Creates a transparent padding trail so the smiley sits on the navy field.
-     */
-    private static String createPaddingTrail() {
-        StringBuilder padding = new StringBuilder();
-        for (int pad = 1; pad > 0; pad--) {
-            padding.append(PADDING_CHAR);
-        }
-        return padding.toString();
+        return evenRow ? ANSI_RED_FOREGROUND : ANSI_WHITE_FOREGROUND;
     }
 
     /**
